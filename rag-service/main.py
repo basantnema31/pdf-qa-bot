@@ -442,7 +442,7 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    print(f"Unhandled exception: {exc}")
+    logger.exception("Unhandled exception during request %s: %s", request.url.path, exc)
     return standard_error_response(500, "Internal server error. Please try again later.")
 
 
@@ -3559,9 +3559,18 @@ def _run_generation_locked(model, generate_kwargs):
     exhaustion while still allowing the calling thread to iterate the streamer
     and forward tokens to the HTTP client as they arrive.
     """
-    with generation_lock:
-        with torch.no_grad():
-            model.generate(**generate_kwargs)
+    try:
+        with generation_lock:
+            with torch.no_grad():
+                model.generate(**generate_kwargs)
+    except Exception as e:
+        logger.exception("Generation thread failed during model.generate: %s", e)
+        streamer = generate_kwargs.get("streamer")
+        if streamer and hasattr(streamer, "end"):
+            try:
+                streamer.end()
+            except Exception:
+                pass
 
 
 @app.post("/summarize")

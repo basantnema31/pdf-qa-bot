@@ -15,6 +15,7 @@ import SignUp from "./components/Auth/SignUp";
 import { AuthProvider } from "./contexts/AuthContext";
 import Dashboard from "./components/Dashboard/Dashboard";
 import StudyHub from "./components/StudyHub/StudyHub";
+import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary";
 
 import { extractApiErrorMessage, uploadPdfApi, getSessionsApi } from "./services/api";
 import {
@@ -759,11 +760,11 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
-          <Route path="/workspace" element={<MainApp />} />
+          <Route path="/workspace" element={<ErrorBoundary><MainApp /></ErrorBoundary>} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
-          <Route path="/dashboard/*" element={<Dashboard />} />
-          <Route path="/studyhub" element={<StudyHub />} />
+          <Route path="/dashboard/*" element={<ErrorBoundary><Dashboard /></ErrorBoundary>} />
+          <Route path="/studyhub" element={<ErrorBoundary><StudyHub /></ErrorBoundary>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
